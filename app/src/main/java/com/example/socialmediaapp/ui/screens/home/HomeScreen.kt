@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,9 +56,9 @@ fun HomeScreen(
                     Column(modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onPostClick(postWithUser.post.id) }
-                        .padding(16.dp)) {
+                        .padding(8.dp)) {
 
-                        Text(text = postWithUser.post.title)
+                        Text(text = postWithUser.post.title, style = MaterialTheme.typography.titleMedium)
 
                         Spacer(modifier = Modifier.height(4.dp))
 
@@ -66,6 +68,7 @@ fun HomeScreen(
                                 postWithUser.user?.let { user -> onUserClick(user.id) }
                             }
                         )
+                        Divider()
                     }
                 }
             }
