@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.socialmediaapp.ui.screens.home.HomeScreen
 import com.example.socialmediaapp.ui.screens.postdetail.PostDetailScreen
-import com.example.socialmediaapp.ui.screens.postdetail.PostDetailViewModel
+import com.example.socialmediaapp.ui.screens.profile.ProfileScreen
 import com.example.socialmediaapp.ui.screens.userdetail.UserDetailScreen
 
 @SuppressLint("ViewModelConstructorInComposable")
@@ -15,23 +15,24 @@ import com.example.socialmediaapp.ui.screens.userdetail.UserDetailScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(navController, startDestination = "home") {
         composable("home") {
-            HomeScreen(
-                onPostClick = { postId -> navController.navigate("post/$postId") },
-                onUserClick = { userId -> navController.navigate("user/$userId") }
-            )
+            HomeScreen(navController)
         }
 
-        composable("post/{postId}") { backStackEntry ->
+        composable("postDetail/{postId}") { backStackEntry ->
             val postId = backStackEntry.arguments?.getString("postId")?.toIntOrNull()
             if (postId != null) {
-                PostDetailScreen(postId = postId, navController = navController)
+                PostDetailScreen(navController, postId = postId)
             }
         }
 
 
-        composable("user/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId")
-            UserDetailScreen(userId = userId, onBackClick = { navController.popBackStack() })
+        composable("userDetail/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")?.toInt() ?: 0
+            UserDetailScreen(navController, userId = userId)
+        }
+
+        composable("myprofile") {
+            ProfileScreen(navController)
         }
     }
 }

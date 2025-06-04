@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.play.services.maps)
+    implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.datastore.preferences.core.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,4 +74,18 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
+    // Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
+
+    // Image picker
+    implementation(libs.androidx.activity.compose)
+    // Coil do wyświetlania obrazów
+    implementation(libs.coil.kt.coil.compose)
+    // DataStore
+    //noinspection GradleDependency
+    implementation(libs.androidx.datastore.preferences)
+
+    implementation (libs.accompanist.permissions.v0301)
+    implementation (libs.accompanist.permissions)
 }

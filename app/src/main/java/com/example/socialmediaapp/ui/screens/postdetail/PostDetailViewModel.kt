@@ -3,6 +3,7 @@ package com.example.socialmediaapp.ui.screens.postdetail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaapp.data.model.Post
+import com.example.socialmediaapp.data.repository.PostRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,38 +12,24 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 
-class PostDetailViewModel : ViewModel() {
+class PostDetailViewModel(private val repository: PostRepository) : ViewModel() {
 
     private val _post = MutableStateFlow<Post?>(null)
     val post: StateFlow<Post?> = _post
 
-    private val _isLoading = MutableStateFlow(false)
+    private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    fun loadPost(postId: Int) {
+    fun fetchPost(id: Int) {
         viewModelScope.launch {
-            _isLoading.value = true
-            val post = withContext(Dispatchers.IO) {
-                fetchPost(postId)
+            try {
+                _isLoading.value = true
+                _post.value = repository.getPost(id)
+            } catch (e: Exception) {
+                _post.value = null
+            } finally {
+                _isLoading.value = false
             }
-            _post.value = post
-            _isLoading.value = false
-        }
-    }
-
-
-    private fun fetchPost(postId: Int): Post? {
-        return try {
-            val json = URL("https://jsonplaceholder.typicode.com/posts/$postId").readText()
-            val obj = JSONObject(json)
-            Post(
-                id = obj.getInt("id"),
-                userId = obj.getInt("userId"),
-                title = obj.getString("title"),
-                body = obj.getString("body")
-            )
-        } catch (e: Exception) {
-            null
         }
     }
 }
