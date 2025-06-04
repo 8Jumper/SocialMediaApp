@@ -1,5 +1,6 @@
 package com.example.socialmediaapp.ui.screens.profile
 
+import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,7 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -27,19 +31,23 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.launch
+import com.example.socialmediaapp.data.DataStoreManager
+import com.example.socialmediaapp.data.model.Post
+import com.example.socialmediaapp.data.network.RetrofitInstance
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.google.android.gms.location.LocationServices
-import android.Manifest
-import com.example.socialmediaapp.data.DataStoreManager
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ProfileScreen(navController: NavController) {
@@ -95,6 +103,24 @@ fun ProfileScreen(navController: NavController) {
             }
         } else {
             locationPermissionsState.launchMultiplePermissionRequest()
+        }
+    }
+
+    var likedPosts by remember { mutableStateOf<List<Post>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            val likedIds = dataStoreManager.getLikedPosts()
+            val posts = likedIds.mapNotNull { id ->
+                try {
+                    withContext(Dispatchers.IO) {
+                        RetrofitInstance.api.getPost(id.toInt())
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            likedPosts = posts
         }
     }
 
@@ -179,6 +205,23 @@ fun ProfileScreen(navController: NavController) {
         }
         Button(onClick = { navController.popBackStack() }) {
             Text("Wróć")
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Polubione posty:", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (likedPosts.isEmpty()) {
+            Text("Brak zapisanych postów.")
+        } else {
+            LazyColumn {
+                items(likedPosts) { post ->
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        Text(post.title, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(post.body, maxLines = 3)
+                    }
+                }
+            }
         }
     }
 }

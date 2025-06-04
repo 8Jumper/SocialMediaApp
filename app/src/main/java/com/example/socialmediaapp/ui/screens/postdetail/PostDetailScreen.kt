@@ -39,19 +39,23 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun PostDetailScreen(navController: NavController, postId: Int) {
     val context = LocalContext.current
+    val dataStoreManager = remember { DataStoreManager(context) }
+
     val postViewModel: PostDetailViewModel = viewModel(
-        factory = PostDetailViewModelFactory(PostRepository(RetrofitInstance.api))
+        factory = PostDetailViewModelFactory(PostRepository(RetrofitInstance.api), dataStoreManager)
     )
     val homeViewModelFactory: HomeViewModel = viewModel(factory = HomeViewModelFactory())
     val post by postViewModel.post.collectAsState()
     val isLoading by postViewModel.isLoading.collectAsState()
 
-    val dataStoreManager = remember { DataStoreManager(context) }
     val scope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf("") }
     var surname by remember { mutableStateOf("") }
     var imagePath by remember { mutableStateOf("") }
+
+    val isLiked by postViewModel.isLiked.collectAsState()
+
 
     LaunchedEffect(Unit) {
         name = dataStoreManager.getName() ?: ""
@@ -81,6 +85,13 @@ fun PostDetailScreen(navController: NavController, postId: Int) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
+
+                Spacer(Modifier.height(12.dp))
+
+                Button(onClick = { postViewModel.toggleLike() }) {
+                    Text(if (isLiked) "💔 Nie lubię" else "❤️ Lubię to")
+                }
+
                 Spacer(Modifier.height(24.dp))
                 Button(onClick = { navController.popBackStack() }) {
                     Text("Wróć")

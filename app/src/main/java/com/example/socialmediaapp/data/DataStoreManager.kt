@@ -3,6 +3,7 @@ package com.example.socialmediaapp.data
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 
@@ -48,4 +49,26 @@ class DataStoreManager(private val context: Context) {
         val prefs = context.dataStore.data.first()
         return prefs[IMAGE_PATH_KEY]
     }
+
+    suspend fun getLikedPosts(): Set<String> {
+        val preferences = context.dataStore.data.first()
+        return preferences[stringSetPreferencesKey("liked_posts")] ?: emptySet()
+    }
+
+    suspend fun isPostLiked(postId: Int): Boolean {
+        return getLikedPosts().contains(postId.toString())
+    }
+
+    suspend fun togglePostLike(postId: Int) {
+        context.dataStore.edit { preferences ->
+            val current = preferences[stringSetPreferencesKey("liked_posts")] ?: emptySet()
+            val updated = if (current.contains(postId.toString())) {
+                current - postId.toString()
+            } else {
+                current + postId.toString()
+            }
+            preferences[stringSetPreferencesKey("liked_posts")] = updated
+        }
+    }
+
 }
